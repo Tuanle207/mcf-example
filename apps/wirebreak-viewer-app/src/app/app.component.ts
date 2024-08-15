@@ -14,7 +14,6 @@ import { MessageService, MessageSource, MessageType } from './services/message.s
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'wirebreak-viewer-app';
   selectedItem: WireBreak | null = null;
 
   wirebreaks: WireBreak[] = []
