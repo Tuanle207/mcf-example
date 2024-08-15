@@ -1,5 +1,5 @@
   <cdk-virtual-scroll-viewport appendOnly itemSize="68">
-    <div *cdkVirtualFor="let wirebreak of wirebreaks" class="item-container" [class.selected]="selectedItem === wirebreak" (click)="selectedItem = wirebreak">
+    <div *cdkVirtualFor="let wirebreak of wirebreaks" class="item-container" [class.selected]="selectedItem === wirebreak" (click)="onItemClick(wirebreak)">
       <div class="line">
         <h3 class="type">{{ wirebreak.type }}</h3>
         <p class="distance">{{ wirebreak.distance.toFixed(2) }}&nbsp;m</p>
