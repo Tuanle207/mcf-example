@@ -1,0 +1,53 @@
+// https://codyhouse.co/blog/post/css-rounded-triangles-with-clip-path
+
+:host {
+  .tooltip-container {
+    display: inline-block;
+    max-width: 400px;
+    background-color: #000;
+    border-radius: 8px;
+    color: #fff;
+    padding: 12px;
+    position: relative;
+    pointer-events: none;
+    
+    &::before {
+      content: '';
+      display: block;
+      height: 20px;
+      width: 20px;
+      background-color: inherit;
+      border: inherit;
+      position: absolute;
+      bottom: -10px;
+      left: calc(50% - 10px);
+      clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+      transform: rotate(-45deg);
+      border-radius: 0 0 0 0.25em;
+    }
+  }
+}
+
+::ng-deep {
+  .tooltip-top .tooltip-container::before {
+    border-color: black transparent transparent transparent !important;
+  }
+
+  .tooltip-bottom .tooltip-container::before {
+    bottom: 100% !important;
+    transform: translateY(50%) rotate(135deg) !important;
+  }
+
+  .tooltip-left .tooltip-container::before {
+    left: auto !important;
+    right: 0 !important;
+    top: 50% !important;
+    transform: translate(50%, -50%) rotate(-135deg) !important;
+  }
+
+  .tooltip-right .tooltip-container::before {
+    left: 0 !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) rotate(45deg) !important;
+  }
+}

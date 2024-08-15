@@ -5,11 +5,14 @@ import { ApiService } from './apis/api.service';
 import { WireBreak } from './apis/api.dto';
 import { CommonModule } from '@angular/common';
 import { MessageService, MessageSource, MessageType } from './services/message.service';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { CustomTooltipDirective } from './directives/custom-tooltip.directive';
+import { PortalModule } from '@angular/cdk/portal';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule,RouterOutlet, ScrollingModule],
+  imports: [CommonModule,RouterOutlet, ScrollingModule, OverlayModule, PortalModule, CustomTooltipDirective],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -1,37 +1,6 @@
-  <cdk-virtual-scroll-viewport appendOnly itemSize="68">
-    <div *cdkVirtualFor="let wirebreak of wirebreaks" class="item-container" [class.selected]="selectedItem === wirebreak" (click)="onItemClick(wirebreak)">
-      <div class="line">
-        <h3 class="type">{{ wirebreak.type }}</h3>
-        <p class="distance">{{ wirebreak.distance.toFixed(2) }}&nbsp;m</p>
-      </div>
-      <div class="line">
-        <p class="id-name">
-          {{ wirebreak.idName }}
-        </p>
-        <span>&nbsp;|&nbsp;</span>
-        <p
-          *ngIf="!!wirebreak.elevation"
-          class="elevation">
-          {{ wirebreak.elevation.toFixed(2) }}&nbsp;m
-        </p>
-        <p
-          *ngIf="!wirebreak.elevation"
-          class="elevation">
-          No information
-        </p>
-      </div>
-      <div class="line">
-        <p
-          class="description">
-          {{ wirebreak.description || 'No description' }}
-        </p>
-          <div class="severity-section">
-            <p
-              class="severity">
-              Severity:&nbsp;
-            </p>
-            <p>{{wirebreak.severityGroup || 'N/A'}}</p>
-          </div>
-      </div>
-    </div>
-  </cdk-virtual-scroll-viewport>
+<div class="container">
+  <button
+    [appCustomTooltip]="'Hello this is a tooltip - Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world'"
+    [tooltipMaxWidth]="'500px'"
+    >Hello world</button>
+</div>
