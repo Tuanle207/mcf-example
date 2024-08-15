@@ -33,7 +33,9 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/leaflet/dist/leaflet.css",
+              "node_modules/@rosen/map/styles/ro-map.scss"
             ],
             "scripts": [],
             "customWebpackConfig": {

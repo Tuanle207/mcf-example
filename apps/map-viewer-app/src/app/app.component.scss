@@ -1,5 +1,5 @@
 :host {
-  display: inline-block;
+  display: block;
   height: 100%;
   width: 100%;
 
@@ -7,6 +7,7 @@
     height: 100%;
     width: 100%;
     position: relative;
+    display: block;
   }
 
   ro-segment-map::ng-deep {

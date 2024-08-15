@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-// @import url('../node_modules/leaflet/dist/leaflet.css');
-// @import url('../node_modules/@rosen/map/styles/ro-map.scss');
+@import '../node_modules/leaflet/dist/leaflet.css';
+@import '../node_modules/@rosen/map/styles/ro-map.scss';
 
 body {
   padding: 0;

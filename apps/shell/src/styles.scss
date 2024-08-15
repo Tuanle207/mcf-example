@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+html {
+    overflow: hidden;
+}
+
+body {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+}
+
+h4 {
+    margin: 0;
+}

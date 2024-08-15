@@ -7,11 +7,11 @@ import { BaseMapOptions, LeafletMap, Marker, Trajectory } from '@rosen/map/scrip
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-root',
+  selector: 'map-viewer',
   standalone: true,
   imports: [CommonModule, RouterOutlet, MapsModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class MapViewComponent implements OnInit {
   title = 'map-viewer-app';
@@ -68,10 +68,10 @@ export class MapViewComponent implements OnInit {
   trajectoryReady(leafletMap: LeafletMap): void {
 		this.leafletMap = leafletMap;
 		this._map.setActiveArea({
-			top: '64px',
-			left: '336px',
-			right: '218px',
-			height: 'calc(100% - 180px)',
+			top: '0',
+			left: '0',
+			right: '0',
+			height: '100%',
 		});
 		this._map.setBounds();
 		this._map.fitBounds();

@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { MessageService, MessageSource, MessageType } from './services/message.service';
 
 @Component({
-  selector: 'app-root',
+  selector: 'wirebreak-list',
   standalone: true,
   imports: [CommonModule,RouterOutlet, ScrollingModule],
   templateUrl: './app.component.html',
