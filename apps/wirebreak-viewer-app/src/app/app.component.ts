@@ -21,7 +21,7 @@ export class AppComponent {
   constructor(private readonly apiService: ApiService) {
     this.apiService.getWirebreaks().subscribe(
       (wirebreaksData) => {
-        this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey = 'WIRE-c');
+        this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey == 'WIRE-c');
       }
     );
   }
