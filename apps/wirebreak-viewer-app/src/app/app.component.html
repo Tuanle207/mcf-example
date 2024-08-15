@@ -1,0 +1,41 @@
+<div class="container">
+  <cdk-virtual-scroll-viewport appendOnly itemSize="120">
+    <div *cdkVirtualFor="let wirebreak of wirebreaks">
+      <div class="item-container" [class.selected]="selectedItem === wirebreak" (click)="selectedItem = wirebreak">
+        <div class="line">
+          <h3 class="type">{{ wirebreak.type }}</h3>
+          <p class="distance">{{ wirebreak.distance }}&nbsp;m</p>
+        </div>
+        <div class="line">
+          <p class="id-name">
+            {{ wirebreak.idName }}
+          </p>
+          <span>&nbsp;|&nbsp;</span>
+          <p
+            *ngIf="!!wirebreak.elevation"
+            class="elevation">
+            {{ wirebreak.elevation }}&nbsp;m
+          </p>
+          <p
+            *ngIf="!wirebreak.elevation"
+            class="elevation">
+            No information
+          </p>
+        </div>
+        <div class="line">
+          <p
+            class="description">
+            {{ wirebreak.description || 'No description' }}
+          </p>
+            <div class="severity-section">
+              <p
+                class="severity">
+                Severity: 
+              </p>
+              <p>{{wirebreak.severityGroup}}</p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</div>

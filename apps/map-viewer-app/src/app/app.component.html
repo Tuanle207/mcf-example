@@ -1,0 +1,6 @@
+<ro-segment-map
+  [options]="options$ | async"
+  [startAnchorIndex]="startAnchorIndex$ | async"
+  [endAnchorIndex]="endAnchorIndex$ | async"
+  [trajectory]="(trajectory$ | async)!"
+  (trajectoryReady)="trajectoryReady($event)"></ro-segment-map>

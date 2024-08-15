@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  wirebreak.api:
+    image: ${DOCKER_REGISTRY-}wirebreakapi
+    build:
+      context: .
+      dockerfile: WireBreak.API/Dockerfile
+
+  tracjectory.api:
+    image: ${DOCKER_REGISTRY-}tracjectoryapi
+    build:
+      context: .
+      dockerfile: Tracjectory.API/Dockerfile
+

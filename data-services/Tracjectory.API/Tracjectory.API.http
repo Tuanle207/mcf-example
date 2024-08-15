@@ -1,0 +1,6 @@
+@Tracjectory.API_HostAddress = http://localhost:5083
+
+GET {{Tracjectory.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

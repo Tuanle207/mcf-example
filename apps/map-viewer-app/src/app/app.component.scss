@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+
+  ro-segment-map {
+    height: 100%;
+    width: 100%;
+
+    // width: 600px;
+    // height: 400px;
+    position: relative;
+  }
+}
