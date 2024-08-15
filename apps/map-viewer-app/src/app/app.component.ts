@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class MapViewComponent implements OnInit {
   title = 'map-viewer-app';
 
 	options$ = new Subject<BaseMapOptions>();
