@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { MapsModule, RoSegmentMapComponent } from '@rosen/map/components';
 import { Subject, BehaviorSubject } from 'rxjs';
 import { ApiService } from './apis/api.service';
-import { BaseMapOptions, LeafletMap, Trajectory } from '@rosen/map/scripts';
+import { BaseMapOptions, LeafletMap, Marker, Trajectory } from '@rosen/map/scripts';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -17,6 +17,7 @@ export class MapViewComponent implements OnInit {
   title = 'map-viewer-app';
 
 	options$ = new Subject<BaseMapOptions>();
+  markers$ = new Subject<Marker[]>(); 
 
 	@ViewChild(RoSegmentMapComponent) private _map: RoSegmentMapComponent;
 	private leafletMap: LeafletMap;
@@ -40,6 +41,8 @@ export class MapViewComponent implements OnInit {
           className: 'line-layer',
         },
       });
+
+      this.selectMarker(trajectory.coordinates[3000][0], trajectory.coordinates[3000][1])
     })
   }
 
@@ -77,4 +80,16 @@ export class MapViewComponent implements OnInit {
 			this.startEndOption = {};
 		});
 	}
+
+  private selectMarker(lng: number, lat: number): void {
+    this.markers$.next([
+        {
+            point: [lng, lat],
+            options: {
+              iconSize: [18, 18],
+              className: 'selected-marker',
+            }
+        },
+    ]);
+  }
 }

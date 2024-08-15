@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  wirebreak.viewer:
+    image: ${DOCKER_REGISTRY-}wirebreakviewer
+    build:
+      context: wirebreak-viewer-app
+      dockerfile: Dockerfile
+    ports:
+    - "4201:80"
+
+  map.viewer:
+    image: ${DOCKER_REGISTRY-}mapviewer
+    build:
+      context: map-viewer-app
+      dockerfile: Dockerfile
+    ports:
+    - "4202:80"
+
