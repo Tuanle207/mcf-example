@@ -44,6 +44,7 @@ import { RemoteComponentRendererDirective } from './remote-component-renderer.di
       .wirebreak-container {
         display: block;
         position: absolute;
+        z-index: 10000;
         width: 30%;
         height: 50%;
         padding: 8px;

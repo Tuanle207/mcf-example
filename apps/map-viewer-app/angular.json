@@ -29,6 +29,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@rosen/map/styles/",
+                "output": "public/@rosen/map/styles"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/leaflet/dist",
+                "output": "public/leaflet/dist"
               }
             ],
             "styles": [
