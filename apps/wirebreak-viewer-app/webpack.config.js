@@ -2,6 +2,7 @@ const {
   ModuleFederationPlugin,
 } = require("@module-federation/enhanced/webpack");
 const { shareAll } = require("@angular-architects/module-federation/webpack");
+const path = require('path');
 
 module.exports = (config, options, targetOptions) => {
   config.devServer = {
@@ -10,6 +11,7 @@ module.exports = (config, options, targetOptions) => {
   config.output = {
     uniqueName: "wirebreak_viewer_app",
     publicPath: "http://localhost:3001/",
+    path: path.resolve(__dirname, 'dist/wirebreak-viewer-app'),
   };
   config.optimization = {
     runtimeChunk: false,
