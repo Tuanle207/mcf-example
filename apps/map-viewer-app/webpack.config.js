@@ -11,7 +11,7 @@ module.exports = (config, options, targetOptions) => {
   config.output = {
     uniqueName: "map_viewer_app",
     publicPath: "http://localhost:3000/",
-    path: path.resolve(__dirname, 'dist/wirebreak-viewer-app'),
+    path: path.resolve(__dirname, 'dist/map-viewer-app'),
   };
   config.optimization = {
     runtimeChunk: false,

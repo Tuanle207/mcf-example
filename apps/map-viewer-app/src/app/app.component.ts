@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MapsModule, RoSegmentMapComponent } from '@rosen/map/components';
 import { Subject, BehaviorSubject } from 'rxjs';
@@ -34,7 +34,7 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   startAnchorIndex$?: Subject<number> = new Subject<number>();
   endAnchorIndex$?: Subject<number> = new Subject<number>();
 
-  constructor(private apiService: ApiService, @Inject('MESSAGE_SERVICE')private messageService: any) {
+  constructor(private apiService: ApiService, @Optional() @Inject('MESSAGE_SERVICE')private messageService: any) {
     this.apiService
       .getTracjectory()
       .subscribe((trajectory: GeoJSON.LineString) => {
@@ -79,7 +79,7 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.messageService.message$.subscribe((message: any) => {
+    this.messageService?.message$.subscribe((message: any) => {
       console.log('Received message in map:', message);
       this.selectMarker(message.payload.longitude, message.payload.latitude);
     })

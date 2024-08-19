@@ -1,4 +1,4 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, Inject, Input, Optional } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { ApiService } from './apis/api.service';
@@ -19,7 +19,7 @@ export class WirebreakListComponent {
 
   wirebreaks: WireBreak[] = []
 
-  constructor(private readonly apiService: ApiService, @Inject('MESSAGE_SERVICE')private messageService: any) {  
+  constructor(private readonly apiService: ApiService, @Optional() @Inject('MESSAGE_SERVICE')private messageService: any) {  
     this.apiService.getWirebreaks().subscribe(
       (wirebreaksData) => {
         this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey == 'WIRE-c');
@@ -29,7 +29,7 @@ export class WirebreakListComponent {
 
   onItemClick(selectedItem: WireBreak): void {
     this.selectedItem = selectedItem;
-    this.messageService.publish({
+    this.messageService?.publish({
       messageType: MessageType.SelectAWirebreak,
       payload: selectedItem,
       source: MessageSource.WirebreakViewer
