@@ -19,7 +19,7 @@ export class WirebreakListComponent {
 
   wirebreaks: WireBreak[] = []
 
-  constructor(private readonly apiService: ApiService, @Optional() @Inject('MESSAGE_SERVICE')private messageService: any) {  
+  constructor(private readonly apiService: ApiService, @Inject('MESSAGE_SERVICE') private messageService: any) {  
     this.apiService.getWirebreaks().subscribe(
       (wirebreaksData) => {
         this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey == 'WIRE-c');

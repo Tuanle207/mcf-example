@@ -20,7 +20,7 @@ module.exports = (config, options, targetOptions) => {
     new ModuleFederationPlugin({
       name: "map_viewer_app",
       filename: "remoteEntry.js",
-      dts: false, // note: issue from the original plugin
+      dts: true, // note: issue from the original plugin
       exposes: {
         "./MapViewComponent": "./src/app/app.component.ts",
       },
@@ -33,6 +33,10 @@ module.exports = (config, options, targetOptions) => {
       },
     })
   );
+
+  // config.resolve.alias = {
+  //   '/assets': '/remote/assets'
+  // };
 
   return config;
 };

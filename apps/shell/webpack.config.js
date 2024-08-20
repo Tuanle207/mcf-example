@@ -16,14 +16,19 @@ module.exports = {
   plugins: [
     new ModuleFederationPlugin({
       name: "shell",
-      dts: false,
+      dts: true,
       remotes: {
         map_viewer_app:"map_viewer_app@http://localhost:3000/remoteEntry.js",
         wirebreak_viewer_app:"wirebreak_viewer_app@http://localhost:3001/remoteEntry.js",
+        // wirebreak_viewer_app:"wirebreak_viewer_app@http://localhost:3001/mf-manifest.json",
       },
+      runtimePlugins: [
+        require.resolve('./offline-remote.js'),
+        require.resolve('./custom-runtime-plugin.js'),
+        require.resolve('./fallback.js'),
+      ],
       shared: {
         ...shareAll({
-          eager: true,
           singleton: true,
           strictVersion: true,
           requiredVersion: "auto",

@@ -34,7 +34,7 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   startAnchorIndex$?: Subject<number> = new Subject<number>();
   endAnchorIndex$?: Subject<number> = new Subject<number>();
 
-  constructor(private apiService: ApiService, @Optional() @Inject('MESSAGE_SERVICE')private messageService: any) {
+  constructor(private apiService: ApiService, @Inject('MESSAGE_SERVICE') private messageService: any) {
     this.apiService
       .getTracjectory()
       .subscribe((trajectory: GeoJSON.LineString) => {
@@ -58,7 +58,7 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.loadLeafletCSS();
+    // this.loadLeafletCSS();
 
     setTimeout(() => {
       this.options$.next({
@@ -113,24 +113,52 @@ export class MapViewComponent implements OnInit, AfterViewInit {
     ]);
   }
 
+
+  // TODO: refactor to use proxy assets/remote in host for remote assets solution
   private async loadLeafletCSS() {
     // @import '../node_modules/leaflet/dist/leaflet.css';
     // @import '../node_modules/@rosen/map/styles/ro-map.scss';
-    await loadCSS('http://localhost:3000/public/leaflet/dist/leaflet.css');
-    await loadCSS('http://localhost:3000/public/@rosen/map/styles/ro-map.scss');
+    await loadCSS('http://localhost:3000/', 'public/leaflet/dist/leaflet.css');
+    await loadCSS('http://localhost:3000/', 'public/@rosen/map/styles/ro-map.scss');
     console.log('Leaflet CSS loaded');
   }
 }
 
-function loadCSS(href: string): Promise<void> {
+function loadCSS(domain: string, path: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = href;
+    link.href = `${domain}${path}`;
 
     link.onload = () => resolve();
-    link.onerror = () => reject(new Error(`Failed to load CSS: ${href}`));
+    link.onerror = () => reject(new Error(`Failed to load CSS: ${`${domain}${path}`}`));
 
     document.head.appendChild(link);
   });
 }
+
+// function loadCSS(domain: string, path: string): Promise<void> {
+//   return new Promise((resolve, reject) => {
+//     fetch(`${domain}${path}`)
+//       .then(response => {
+//         if (!response.ok) {
+//           throw new Error(`Failed to fetch CSS: ${`${domain}${path}`}`);
+//         }
+//         return response.text();
+//       })
+//       .then(cssContent => {
+//         // Replace the relative paths with absolute paths
+//         const modifiedCSS = cssContent.replace(new RegExp('../assets/', 'g'), `${domain}/assets/`);
+
+//         // Create a style element and insert the modified CSS
+//         const styleElement = document.createElement('style');
+//         styleElement.textContent = modifiedCSS;
+//         document.head.appendChild(styleElement);
+
+//         resolve(); // Resolve the promise when CSS is successfully injected
+//       })
+//       .catch(error => {
+//         reject(new Error(`Failed to load CSS: ${`${domain}${path}`} - ${error.message}`));
+//       });
+//   });
+// }
