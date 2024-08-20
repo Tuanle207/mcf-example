@@ -1,29 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Provider } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
+import { Message } from '../model';
 
 
-export enum MessageType
-{
-  SelectAWirebreak = 'SelectAWirebreak'
-}
 
-export enum MessageSource {
-  WirebreakViewer = 'WirebreakViewer',
-  MapViewer = 'MapViewer'
-}
-
-
-export interface Message<T = any> {
-  messageType: MessageType;
-  payload?: T;
-  source?: MessageSource;
-  publishedAt?: Date
-}
-
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class MessageService {
   private _messages: Message[] = [];
   private _message$ = new ReplaySubject<Message>(1);
@@ -34,5 +15,12 @@ export class MessageService {
     publishedMessage.publishedAt = new Date();
     this._messages.push(publishedMessage);
     this._message$.next(publishedMessage);
+  }
+}
+
+export function provideMessageService(): Provider  {
+  return {
+    provide: 'MESSAGE_SERVICE',
+    useClass: MessageService
   }
 }

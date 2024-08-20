@@ -1,0 +1,17 @@
+:host {
+    display: flex;
+    width: 100%;
+    height: calc(100% - 16px);
+    overflow: hidden;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 2px dashed black;
+
+    .action {
+        display: flex;
+        position: absolute;
+        top: 4px;
+        left: 100px;
+        z-index: 10;
+    }
+}

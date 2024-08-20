@@ -1,0 +1,16 @@
+/* You can add global styles to this file, and also import other style files */
+@import '../node_modules/leaflet/dist/leaflet.css';
+@import '../node_modules/@rosen/map/styles/ro-map.scss';
+
+html {
+    overflow: hidden;
+}
+
+body {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+}
+
+h4 {
+    margin: 0;
+}
