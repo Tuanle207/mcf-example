@@ -2,6 +2,7 @@
 FROM node:20.15.0-alpine AS build
 WORKDIR /app
 COPY package*.json ./
+COPY .npmrc ./
 RUN npm install
 COPY . .
 RUN npm run build

@@ -20,7 +20,7 @@ module.exports = (config, options, targetOptions) => {
     new ModuleFederationPlugin({
       name: "wirebreak_viewer_app",
       filename: "remoteEntry.js",
-      dts: false, // note: issue from the original plugin
+      dts: true, // note: issue from the original plugin
       exposes: {
         "./WirebreakListComponent": "./src/app/app.component.ts",
       },

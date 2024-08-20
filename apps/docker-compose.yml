@@ -7,7 +7,7 @@ services:
       context: wirebreak-viewer-app
       dockerfile: Dockerfile
     ports:
-    - "4201:80"
+    - "3001:80"
 
   map.viewer:
     image: ${DOCKER_REGISTRY-}mapviewer
@@ -15,5 +15,13 @@ services:
       context: map-viewer-app
       dockerfile: Dockerfile
     ports:
-    - "4202:80"
+    - "3000:80"
+
+  shell.app:
+    image: ${DOCKER_REGISTRY-}shellapp
+    build:
+      context: shell
+      dockerfile: Dockerfile
+    ports:
+    - "4000:80"
 
