@@ -8,7 +8,6 @@ import {
 import { RemoteModuleLoaderService } from './remote-module-loader.service';
 
 @Directive({
-  standalone: true,
   selector: '[remoteComponentRenderer]',
 })
 export class RemoteComponentRendererDirective implements AfterViewInit {
