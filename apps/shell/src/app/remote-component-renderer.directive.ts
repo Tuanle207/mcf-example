@@ -28,11 +28,9 @@ export class RemoteComponentRendererDirective implements AfterViewInit {
     private injector: Injector,
     private remoteModuleLoaderService: RemoteModuleLoaderService
   ) {
-    // this.renderComponent();
   }
 
   ngAfterViewInit(): void {
-    // this.renderComponent();
   }
 
   ngOnInit() {

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MapsModule, RoSegmentMapComponent } from '@rosen/map/components';
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { ApiService } from './apis/api.service';
 import {
   BaseMapOptions,
@@ -79,7 +79,7 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.messageService?.message$.subscribe((message: any) => {
+    this.messageService?.message$.pipe(distinctUntilChanged()).subscribe((message: any) => {
       console.log('Received message in map:', message);
       this.selectMarker(message.payload.longitude, message.payload.latitude);
     })
