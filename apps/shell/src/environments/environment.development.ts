@@ -10,7 +10,7 @@ export const environment = {
         'https://wasoteam.onmicrosoft.com/dev/waso/wave/api/WAVE.Read',
         'https://wasoteam.onmicrosoft.com/dev/waso/wave/api/WAVE.Write'
       ],
-      uri: 'http://localhost:6061'
+      uri: 'http://localhost:5000'
   },
   b2cPolicies: {
       names: {

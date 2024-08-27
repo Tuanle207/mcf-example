@@ -17,11 +17,11 @@ services:
     ports:
     - "3000:80"
 
-  shell.viewer:
-    image: ${DOCKER_REGISTRY-}shell
-    build:
-      context: shell
-      dockerfile: Dockerfile
-    ports:
-    - "4000:80"
+  # shell.viewer:
+  #   image: ${DOCKER_REGISTRY-}shell
+  #   build:
+  #     context: shell
+  #     dockerfile: Dockerfile
+  #   ports:
+  #   - "4000:80"
 

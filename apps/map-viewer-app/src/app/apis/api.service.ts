@@ -10,6 +10,6 @@ export class ApiService {
   }
 
   getTracjectory(): Observable<Trajectory> {
-    return this.httpClient.get<Trajectory>(`${environment.apiUrl}/api/trajectory`);
+    return this.httpClient.get<Trajectory>(`${environment.apiUrl}/api/wli/inspection-segments/e6fe2e6e-ba8e-4372-ba48-a14a5cbe8781/trajectories`);
   }
 }
