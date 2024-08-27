@@ -26,6 +26,7 @@ module.exports = {
         require.resolve('./offline-remote.js'),
         require.resolve('./custom-runtime-plugin.js'),
         require.resolve('./fallback.js'),
+        require.resolve('./shared-strategy.js')
       ],
       shared: {
         ...shareAll({
