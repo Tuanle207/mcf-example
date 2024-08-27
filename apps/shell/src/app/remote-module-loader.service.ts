@@ -4,6 +4,14 @@ import {
   Injectable,
   Type,
 } from '@angular/core';
+import { init, loadRemote } from '@module-federation/enhanced/runtime';
+
+const environment: any = {
+  microFrontends: {
+    map_viewer_app: 'http://localhost:3000/remoteEntry.js',
+    wirebreak_viewer_app: 'http://localhost:3001/remoteEntry.js',
+  },
+};
 
 @Injectable({
   providedIn: 'root',
@@ -14,13 +22,16 @@ export class RemoteModuleLoaderService {
   async loadRemoteModule(name: string) {
     const [scope, moduleName] = name.split('/');
 
-    // init({
-    //   name: 'consumer',
-    //   remotes:[ {
-    //     name: scope,
-    //     entry: 'http://localhost:2000/remoteEntry.js',
-    //   }]
-    // });
+    init({
+      name: 'shell',
+      remotes:[ {
+        name: scope,
+        entry: environment.microFrontends[scope],
+        //  'http://localhost:3000/remoteEntry.js',
+      }]
+    });
+
+    await loadRemote(scope);
 
     // registerRemotes([ {
     //   name: scope,
@@ -28,8 +39,8 @@ export class RemoteModuleLoaderService {
     // }], {force: true});
     // const moduleFactory = await loadRemote(name) as any;
 
-    const moduleFactory = await (window as any)[scope].get('./' + moduleName);
-    return moduleFactory();
+    const moduleFactory = await (window as any)[scope]?.get('./' + moduleName);
+    return moduleFactory && moduleFactory();
 
     // return loadRemoteModule({
     //   remoteEntry: 'http://localhost:2000/remoteEntry.js',
