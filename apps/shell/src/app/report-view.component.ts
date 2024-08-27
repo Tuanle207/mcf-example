@@ -1,36 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { RemoteComponentRendererDirective } from './remote-component-renderer.directive';
-import { ErrorBoundaryComponent } from './component/error-boundary/error-boundary.component';
 
 @Component({
   standalone: true,
-  imports: [RemoteComponentRendererDirective, ErrorBoundaryComponent],
+  imports: [RemoteComponentRendererDirective],
   selector: 'report-view',
   template: `
     <div class="map-container">
-      <error-boundary [content]="mapContentTpl">
-        <ng-template #mapContentTpl>
-          <ng-container
-            *remoteComponentRenderer="
-              'MapViewComponent';
-              module: 'map_viewer_app/MapViewComponent'
-            "
-          ></ng-container>
-        </ng-template>
-      </error-boundary>
+      <ng-container
+        *remoteComponentRenderer="
+          'MapViewComponent';
+          module: 'map_viewer_app/MapViewComponent'
+        "
+      ></ng-container>
     </div>
 
     <div class="wirebreak-container">
-      <error-boundary [content]="wirebreakTpl">
-        <ng-template #wirebreakTpl>
-          <ng-container
-            *remoteComponentRenderer="
-              'WirebreakListComponent';
-              module: 'wirebreak_viewer_app/WirebreakListComponent'
-            "
-          ></ng-container>
-        </ng-template>
-      </error-boundary>
+      <ng-container
+        *remoteComponentRenderer="
+          'WirebreakListComponent';
+          module: 'wirebreak_viewer_app/WirebreakListComponent'
+        "
+      ></ng-container>
     </div>
   `,
   styles: [

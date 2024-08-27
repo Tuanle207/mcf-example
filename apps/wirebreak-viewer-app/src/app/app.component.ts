@@ -25,8 +25,6 @@ export class WirebreakListComponent {
         this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey == 'WIRE-c');
       }
     );
-
-    throw new Error('Error in WirebreakListComponent');
   }
 
   onItemClick(selectedItem: WireBreak): void {
