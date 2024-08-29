@@ -8,7 +8,6 @@ import {
 import { RemoteModuleLoaderService } from './remote-module-loader.service';
 
 @Directive({
-  standalone: true,
   selector: '[remoteComponentRenderer]',
 })
 export class RemoteComponentRendererDirective implements AfterViewInit {
@@ -37,13 +36,22 @@ export class RemoteComponentRendererDirective implements AfterViewInit {
     this.renderComponent();
   }
 
+  // TODO: update to new API
   private async renderComponent() {
     const module = await this.remoteModuleLoaderService.loadRemoteModule(
       this._moduleName
     );
+    if (!module) {
+      return;
+    }
+
     const componentFactory = this.remoteModuleLoaderService.getComponentFactory(
       module[this._componentName]
     );
+    if (!componentFactory) {
+      return;
+    }
+
     this.viewContainerRef.createComponent(
       componentFactory,
       undefined,

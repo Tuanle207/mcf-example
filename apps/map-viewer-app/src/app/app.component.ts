@@ -122,6 +122,10 @@ export class MapViewComponent implements OnInit, AfterViewInit {
     await loadCSS('http://localhost:3000/', 'public/@rosen/map/styles/ro-map.scss');
     console.log('Leaflet CSS loaded');
   }
+
+  alert(): void {
+    alert('Hello from map-viewer-app');
+  }
 }
 
 function loadCSS(domain: string, path: string): Promise<void> {

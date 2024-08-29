@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { RemoteComponentRendererDirective } from './remote-component-renderer.directive';
+import { RemoteComponentRendererDirective } from '../remote-component-renderer.directive';
 
 @Component({
-  standalone: true,
-  imports: [RemoteComponentRendererDirective],
   selector: 'report-view',
   template: `
     <div class="map-container">

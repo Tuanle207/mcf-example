@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { ReportViewComponent } from './report-view.component';
+import { ReportViewComponent } from './components/report-view.component';
 
 export const routes: Routes = [
     {

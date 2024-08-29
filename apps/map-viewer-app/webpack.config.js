@@ -1,7 +1,6 @@
 const {
   ModuleFederationPlugin,
 } = require("@module-federation/enhanced/webpack");
-const { shareAll } = require("@angular-architects/module-federation/webpack");
 const path = require('path');
 
 module.exports = (config, options, targetOptions) => {
@@ -19,23 +18,17 @@ module.exports = (config, options, targetOptions) => {
     publicPath: "auto",
     path: path.resolve(__dirname, 'dist/map-viewer-app'),
   };
-  config.optimization = {
-    runtimeChunk: false,
-  };
+
+  delete config.optimization?.splitChunks;
+
   config.plugins.push(
     new ModuleFederationPlugin({
       name: "map_viewer_app",
-      // filename: "remoteEntry.js",
+      filename: "remoteEntry.js",
+      runtime: false,
       exposes: {
         "./MapViewComponent": "./src/app/app.component.ts",
       },
-      // shared: {
-      //   ...shareAll({
-      //     singleton: true,
-      //     strictVersion: true,
-      //     requiredVersion: "auto",
-      //   }),
-      // },
       shared: {
         "@angular/core": { singleton: true, strictVersion: true, requiredVersion: '>= 18.0.0' },
         "@angular/common": { singleton: true, strictVersion: true, requiredVersion: '>= 18.0.0' },

@@ -5,3 +5,5 @@
   [markers]="(markers$ | async)!"
   [trajectory]="(trajectory$ | async)!"
   (trajectoryReady)="trajectoryReady($event)"></ro-segment-map>
+
+  <button style="position: absolute; right: 0; bottom: 0;" (click)="alert()">MAP btn 5</button>
