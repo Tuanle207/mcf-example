@@ -1,0 +1,1 @@
+export declare module 'map_viewer_app/MapViewComponent';

@@ -20,8 +20,16 @@ export const routes: Routes = [
         loadComponent: () => import('map_viewer_app/MapViewComponent').then(m => m.MapViewComponent),
       },
       {
+        // NOTE: handle fallback when the remote is offline or not available
         path: 'wirebreak',
-        loadComponent: () => import('wirebreak_viewer_app/WirebreakListComponent').then(m => m.WirebreakListComponent),
+        loadComponent: () =>
+          import('wirebreak_viewer_app/WirebreakListComponent')
+            .then(m => m.WirebreakListComponent)
+            .catch(err => {
+              console.error('Error loading remote component:', err);
+              // Handle the error by returning a fallback component
+              // return import('./fallback/fallback.component').then(m => m.FallbackComponent);
+            }),
       },
     ]
   },

@@ -27,24 +27,31 @@ export class RemoteComponentRendererDirective implements AfterViewInit {
     private injector: Injector,
     private remoteModuleLoaderService: RemoteModuleLoaderService
   ) {
-    // this.renderComponent();
   }
 
   ngAfterViewInit(): void {
-    // this.renderComponent();
   }
 
   ngOnInit() {
     this.renderComponent();
   }
 
+  // TODO: update to new API
   private async renderComponent() {
     const module = await this.remoteModuleLoaderService.loadRemoteModule(
       this._moduleName
     );
+    if (!module) {
+      return;
+    }
+
     const componentFactory = this.remoteModuleLoaderService.getComponentFactory(
       module[this._componentName]
     );
+    if (!componentFactory) {
+      return;
+    }
+
     this.viewContainerRef.createComponent(
       componentFactory,
       undefined,

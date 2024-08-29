@@ -1,3 +1,4 @@
+// NOTE: deprecated, use shareStrategy: "loaded-first" in host
 
 const sharedStrategy = () => ({
   name: 'shared-strategy-plugin',

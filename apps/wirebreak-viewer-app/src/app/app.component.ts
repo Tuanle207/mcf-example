@@ -19,12 +19,22 @@ export class WirebreakListComponent {
 
   wirebreaks: WireBreak[] = []
 
+  testObj: any;
+
   constructor(private readonly apiService: ApiService, @Inject('MESSAGE_SERVICE') private messageService: any) {  
     this.apiService.getWirebreaks().subscribe(
       (wirebreaksData) => {
         this.wirebreaks = wirebreaksData.items.filter(x => x.typeKey == 'WIRE-c');
       }
     );
+
+    // throw new Error('This is a test error');
+    // First: should do try-catch well in remote itself
+    // try {
+    // } catch (error) {
+    //   console.error('Error in wirebreak-list.component.ts');
+    // }
+      
   }
 
   onItemClick(selectedItem: WireBreak): void {

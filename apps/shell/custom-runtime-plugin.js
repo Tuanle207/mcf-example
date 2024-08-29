@@ -24,14 +24,5 @@ export default function () {
       console.log("beforeloadShare:", args);
       return args;
     },
-    errorLoadRemote(args) {
-      console.log("errorLoadRemote:", args);
-      if(args.lifecycle === 'onLoad') {
-        const fallback = 'fallback';
-        return fallback;
-      } else if (args.lifecycle === 'beforeRequest') {
-        return args
-      }
-    }
   };
 }
