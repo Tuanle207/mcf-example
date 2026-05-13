@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ReportViewComponent } from './components/report-view.component';
+import { IframeViewComponent } from './components/iframe-view.component';
 
 export const routes: Routes = [
     {
@@ -8,10 +9,12 @@ export const routes: Routes = [
     },
     {
         path: 'map',
-        loadComponent: () => import('map_viewer_app/MapViewComponent').then(m => m.MapViewComponent)
+        component: IframeViewComponent,
+        data: { src: 'http://localhost:3000' },
     },
     {
         path: 'wirebreak',
-        loadComponent: () => import('wirebreak_viewer_app/WirebreakListComponent').then(m => m.WirebreakListComponent)
+        component: IframeViewComponent,
+        data: { src: 'http://localhost:3001' },
     }
 ];

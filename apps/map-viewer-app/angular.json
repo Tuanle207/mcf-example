@@ -15,7 +15,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/map-viewer-app",
             "index": "src/index.html",
@@ -35,9 +35,6 @@
               "node_modules/@rosen/map/styles/ro-map.scss"
             ],
             "scripts": [],
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
-            },
             "allowedCommonJsDependencies": [
               "@rosen/script", "leaflet"
             ]
@@ -79,7 +76,10 @@
           "defaultConfiguration": "development"
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "port": 3000
+          },
           "configurations": {
             "production": {
               "buildTarget": "map-viewer-app:build:production"

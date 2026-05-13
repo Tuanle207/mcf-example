@@ -7,9 +7,9 @@ import { MsalGuard, MsalInterceptor, MsalBroadcastService, MsalInterceptorConfig
 import { environment } from '../environments/environment';
 import { FailedComponent } from './components/failed/failed.component';
 import { ReportViewComponent } from './components/report-view.component';
+import { IframeViewComponent } from './components/iframe-view.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { RemoteComponentRendererDirective } from './remote-component-renderer.directive';
 import { CommonModule } from '@angular/common';
 import { provideMessageService } from './services/message.service';
 import { GlobalErrorHandler } from './services/globe-error-handler.service';
@@ -67,8 +67,8 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   declarations: [
     AppComponent,
     ReportViewComponent,
+    IframeViewComponent,
     FailedComponent,
-    RemoteComponentRendererDirective
   ],
   imports: [
     CommonModule,

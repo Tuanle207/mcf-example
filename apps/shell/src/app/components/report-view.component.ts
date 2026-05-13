@@ -1,25 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { RemoteComponentRendererDirective } from '../remote-component-renderer.directive';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { PostMessageBridgeService } from '../services/post-message-bridge.service';
 
 @Component({
   selector: 'report-view',
   template: `
     <div class="map-container">
-      <ng-container
-        *remoteComponentRenderer="
-          'MapViewComponent';
-          module: 'map_viewer_app/MapViewComponent'
-        "
-      ></ng-container>
+      <iframe #mapIframe src="http://localhost:3000" style="width:100%;height:100%;border:none;" allow="fullscreen"></iframe>
     </div>
 
     <div class="wirebreak-container">
-      <ng-container
-        *remoteComponentRenderer="
-          'WirebreakListComponent';
-          module: 'wirebreak_viewer_app/WirebreakListComponent'
-        "
-      ></ng-container>
+      <iframe #wirebreakIframe src="http://localhost:3001" style="width:100%;height:100%;border:none;"></iframe>
     </div>
   `,
   styles: [
@@ -55,8 +47,24 @@ import { RemoteComponentRendererDirective } from '../remote-component-renderer.d
     `,
   ],
 })
-export class ReportViewComponent implements OnInit {
-  constructor() {}
+export class ReportViewComponent implements OnInit, OnDestroy {
+  @ViewChild('mapIframe') mapIframe!: ElementRef<HTMLIFrameElement>;
 
-  ngOnInit() {}
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(private readonly bridgeService: PostMessageBridgeService) {}
+
+  ngOnInit(): void {
+    // Relay messages from wirebreak iframe → map iframe
+    this.bridgeService.message$.pipe(takeUntil(this.destroy$)).subscribe(message => {
+      if (this.mapIframe?.nativeElement) {
+        this.bridgeService.sendToIframe(this.mapIframe.nativeElement, message);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

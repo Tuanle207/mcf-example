@@ -21,7 +21,6 @@
     "@angular/router": "^18.1.0",
     "@azure/msal-angular": "^3.0.23",
     "@azure/msal-browser": "^3.21.0",
-    "@module-federation/enhanced": "^0.5.1",
     "@rosen/map": "2.0.15",
     "@rosen/ng": "^2.6.1",
     "@types/geojson": "^7946.0.10",
@@ -34,7 +33,6 @@
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^18.0.0",
     "@angular-devkit/build-angular": "^18.1.4",
     "@angular/cli": "^18.1.4",
     "@angular/compiler-cli": "^18.1.0",

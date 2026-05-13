@@ -5,6 +5,7 @@ import { BrowserUtils } from '@azure/msal-browser';
 import { ReportViewComponent } from './components/report-view.component';
 import { FailedComponent } from './components/failed/failed.component';
 import { canActivateGuard } from './guards/auth.guard';
+import { IframeViewComponent } from './components/iframe-view.component';
 
 export const routes: Routes = [
   {
@@ -17,19 +18,13 @@ export const routes: Routes = [
       },
       {
         path: 'map',
-        loadComponent: () => import('map_viewer_app/MapViewComponent').then(m => m.MapViewComponent),
+        component: IframeViewComponent,
+        data: { src: 'http://localhost:3000' },
       },
       {
-        // NOTE: handle fallback when the remote is offline or not available
         path: 'wirebreak',
-        loadComponent: () =>
-          import('wirebreak_viewer_app/WirebreakListComponent')
-            .then(m => m.WirebreakListComponent)
-            .catch(err => {
-              console.error('Error loading remote component:', err);
-              // Handle the error by returning a fallback component
-              // return import('./fallback/fallback.component').then(m => m.FallbackComponent);
-            }),
+        component: IframeViewComponent,
+        data: { src: 'http://localhost:3001' },
       },
     ]
   },
