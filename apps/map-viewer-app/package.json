@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "@auth0/auth0-angular": "^2.2.3",
     "@angular/animations": "^18.1.0",
     "@angular/cdk": "^18.1.4",
     "@angular/common": "^18.1.0",

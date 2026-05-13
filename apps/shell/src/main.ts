@@ -1,7 +1,11 @@
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { AppModule } from './app/app.module';
+import { environment } from './environments/environment';
+import { enableProdMode } from '@angular/core';
 
-// issue: The loadShareSync function was unable to load  
-// 1. share was registered with the 'get' attribute, but loadShare was not used beforehand.
-// or 2. share was not registered with the 'lib' attribute.
-// ref: https://github.com/module-federation/core/issues/2280
-import('./bootstrap')
-	.catch(err => console.error(err));
+if (environment.production) {
+  enableProdMode();
+}
+
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .catch(err => console.error(err));

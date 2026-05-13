@@ -1,27 +1,5 @@
-import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { MsalService, MsalBroadcastService, MSAL_GUARD_CONFIG, MsalGuardConfiguration } from '@azure/msal-angular';
-import {
-	AuthenticationResult,
-	InteractionStatus,
-	PopupRequest,
-	RedirectRequest,
-	EventMessage,
-	EventType,
-	InteractionType,
-	AccountInfo,
-	SsoSilentRequest,
-	IdTokenClaims,
-	PromptValue,
-} from '@azure/msal-browser';
-import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
-
-import { environment } from '../environments/environment';
-
-type IdTokenClaimsWithPolicyId = IdTokenClaims & {
-	acr?: string;
-	tfp?: string;
-};
+import { Component, inject } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
 	selector: 'app-root',
@@ -29,18 +7,14 @@ type IdTokenClaimsWithPolicyId = IdTokenClaims & {
 	styleUrl: './app.component.scss',
 })
 export class AppComponent {
-	title = 'Angular 16 B2C Sample - MSAL Angular v3';
-	isIframe = false;
-	loginDisplay = false;
-	private readonly _destroying$ = new Subject<void>();
+	private readonly auth0 = inject(AuthService);
+	readonly isAuthenticated$ = this.auth0.isAuthenticated$;
+	readonly user$ = this.auth0.user$;
 
-	constructor(
-		@Inject(MSAL_GUARD_CONFIG) private msalGuardConfig: MsalGuardConfiguration,
-		private authService: MsalService,
-		private msalBroadcastService: MsalBroadcastService
-	) {}
-
-	ngOnInit(): void {
+	logout(): void {
+		this.auth0.logout({ logoutParams: { returnTo: globalThis.location.origin } });
+	}
+}
 		this.isIframe = window !== window.parent && !window.opener; // Remove this line to use Angular Universal
 		this.setLoginDisplay();
 

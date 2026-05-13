@@ -1,16 +1,14 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { MsalGuard } from '@azure/msal-angular';
-import { BrowserUtils } from '@azure/msal-browser';
+import { AuthGuard } from '@auth0/auth0-angular';
 import { ReportViewComponent } from './components/report-view.component';
 import { FailedComponent } from './components/failed/failed.component';
-import { canActivateGuard } from './guards/auth.guard';
 import { IframeViewComponent } from './components/iframe-view.component';
 
 export const routes: Routes = [
   {
     path: '',
-    canActivate: [canActivateGuard, MsalGuard],
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',
@@ -35,10 +33,7 @@ export const routes: Routes = [
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes, {
-        // Don't perform initial navigation in iframes or popups
-        initialNavigation: !BrowserUtils.isInIframe() && !BrowserUtils.isInPopup() ? 'enabledNonBlocking' : 'disabled' // Set to enabledBlocking to use Angular Universal
-    })],
-    exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes, { initialNavigation: 'enabledNonBlocking' })],
+  exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

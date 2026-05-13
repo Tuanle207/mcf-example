@@ -16,7 +16,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   ],
 })
 export class IframeViewComponent implements OnInit {
-  safeSrc: SafeResourceUrl;
+  safeSrc!: SafeResourceUrl;
 
   constructor(
     private readonly route: ActivatedRoute,

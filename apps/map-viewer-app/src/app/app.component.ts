@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MapsModule, RoSegmentMapComponent } from '@rosen/map/components';
-import { Subject, BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { Subject, BehaviorSubject, distinctUntilChanged, take } from 'rxjs';
 import { ApiService } from './apis/api.service';
 import {
   BaseMapOptions,
@@ -10,6 +10,7 @@ import {
   Trajectory,
 } from '@rosen/map/scripts';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'map-viewer',
@@ -21,20 +22,27 @@ import { CommonModule } from '@angular/common';
 export class MapViewComponent implements OnInit, AfterViewInit {
   title = 'map-viewer-app';
 
+  private readonly auth0 = inject(AuthService);
+
   options$ = new Subject<BaseMapOptions>();
   markers$ = new Subject<Marker[]>();
 
-  @ViewChild(RoSegmentMapComponent) private _map: RoSegmentMapComponent;
-  private leafletMap: LeafletMap;
+  @ViewChild(RoSegmentMapComponent) private _map!: RoSegmentMapComponent;
+  private leafletMap!: LeafletMap;
   startEndOption = {};
 
   trajectory$: BehaviorSubject<Trajectory> = new BehaviorSubject<Trajectory>(
-    null
-  ); // use BehaviorSubject to emit latest value when api data already cached
+    null as unknown as Trajectory
+  );
   startAnchorIndex$?: Subject<number> = new Subject<number>();
   endAnchorIndex$?: Subject<number> = new Subject<number>();
 
-  constructor(private apiService: ApiService, @Inject('MESSAGE_SERVICE') private messageService: any) {
+  constructor(
+    private readonly apiService: ApiService,
+    @Inject('MESSAGE_SERVICE') private readonly messageService: any,
+  ) {}
+
+  private loadData(): void {
     this.apiService
       .getTracjectory()
       .subscribe((trajectory: GeoJSON.LineString) => {
@@ -58,7 +66,22 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // this.loadLeafletCSS();
+    // Ensure authenticated before loading data
+    this.auth0.isAuthenticated$.pipe(take(1)).subscribe(isAuthenticated => {
+      if (!isAuthenticated) {
+        const isInIframe = window !== window.parent;
+        if (isInIframe) {
+          // In iframe: try silent token (SSO from shell), fall back to popup
+          this.auth0.getAccessTokenSilently().subscribe({
+            error: () => this.auth0.loginWithPopup(),
+          });
+        } else {
+          this.auth0.loginWithRedirect();
+        }
+        return;
+      }
+      this.loadData();
+    });
 
     setTimeout(() => {
       this.options$.next({

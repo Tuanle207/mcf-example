@@ -10,6 +10,8 @@
   },
   "private": true,
   "dependencies": {
+    "@azure/msal-angular": "^3.0.23",
+    "@azure/msal-browser": "^3.21.0",
     "@angular/animations": "^18.1.0",
     "@angular/cdk": "^18.1.4",
     "@angular/common": "^18.1.0",
