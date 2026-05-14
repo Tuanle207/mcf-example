@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
   wirebreak.api:
     image: ${DOCKER_REGISTRY-}wirebreakapi

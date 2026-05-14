@@ -1,0 +1,624 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="slides-format" content="viewport" />
+  <title>Module Federation – From Micro Frontend Architecture to Runtime Mechanics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-bg: #1e0b36;
+      --color-bg-deep: #0d0020;
+      --color-surface: #2d1050;
+      --color-text: #f0feff;
+      --color-text-secondary: #b9f1f3;
+      --color-text-muted: #84669c;
+      --color-accent-1: #5b337b;
+      --color-accent-2: #50dce1;
+      --color-accent-3: #96eaed;
+      --color-glass-bg: rgba(80,220,225,0.07);
+      --color-glass-border: rgba(80,220,225,0.18);
+      --color-vignette: rgba(0,0,0,0.5);
+      --font-display: 'Inter', Arial, sans-serif;
+      --font-body: 'Inter', Arial, sans-serif;
+    }
+  </style>
+  <style>
+    :root { --color-bg: #1e0b36; --color-text: #f0feff; --glow-color-rgb: 80,220,225; --color-glass-bg: rgba(80,220,225,0.07); --color-glass-border: rgba(80,220,225,0.18); --color-vignette: rgba(0,0,0,0.5); }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background: var(--color-bg); margin: 0; }
+    body { font-family: var(--font-body); color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide { position: absolute; inset: 0; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+    .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1180px; padding: clamp(1.5rem, 4vw, 4rem); }
+    .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: var(--color-glass-bg); backdrop-filter: blur(12px); padding: 10px 22px; border-radius: 999px; border: 1px solid var(--color-glass-border); }
+    .nav-btn { width: 40px; height: 40px; border: none; background: rgba(80,220,225,0.08); color: #fff; border-radius: 50%; font-size: 1.1rem; cursor: pointer; }
+    .slide-dots { display: flex; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(80,220,225,0.2); cursor: pointer; transition: .25s; }
+    .dot.active { background: var(--color-accent-2); transform: scale(1.25); }
+    .slide-counter { font-size: 0.82rem; color: var(--color-text-muted); min-width: 44px; text-align: center; }
+    .reveal { opacity: 0; transform: translateY(20px); }
+    .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 14s ease-in-out infinite; }
+    .blob:nth-child(2) { animation: float-drift 18s ease-in-out infinite; }
+    .blob:nth-child(3) { animation: float-slow 20s ease-in-out infinite reverse; }
+    .blob:nth-child(4) { animation: float-drift 22s ease-in-out infinite reverse; }
+    .slide::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-repeat: repeat; background-size: 256px 256px; opacity: 0.03; mix-blend-mode: overlay; }
+    .slide::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 52%, var(--color-vignette) 100%); }
+    .text-glow { text-shadow: 0 0 18px rgba(var(--glow-color-rgb), .45), 0 0 40px rgba(var(--glow-color-rgb), .16); }
+    .stat-glow { text-shadow: 0 0 30px rgba(80,220,225,.4); }
+    .glass { background: rgba(50,0,90,0.28); border: 1px solid rgba(80,220,225,0.18); backdrop-filter: blur(14px); border-radius: 24px; box-shadow: 0 8px 30px rgba(13,0,32,.35); }
+    .soft-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(80,220,225,.35), transparent); }
+    .accent-pill { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(80,220,225,.28); background: rgba(80,220,225,.08); border-radius:999px; padding:.45rem .9rem; color: var(--color-text-secondary); font-size:.9rem; font-weight:600; letter-spacing:0.5px; }
+    .deco-shape { position:absolute; border-radius:999px; opacity:.11; filter: blur(2px); z-index: 1; pointer-events:none; }
+    .bar-track { width: 100%; height: 16px; border-radius: 999px; background: rgba(80,220,225,0.12); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5b337b, #50dce1); width: 0%; }
+    .code-box { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(13,0,32,.75); border: 1px solid rgba(80,220,225,.15); border-radius: 18px; padding: 1rem 1.1rem; color: #b9f1f3; line-height: 1.5; white-space: pre-wrap; font-size: 0.88rem; }
+    .step-badge { width: 42px; height: 42px; border-radius: 50%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #32005a, #50dce1); color:#fff; font-weight:800; box-shadow: 0 12px 30px rgba(80,220,225,.25); flex-shrink: 0; }
+    @keyframes float-slow { 0%{transform:translate(0,0) scale(1)} 25%{transform:translate(50px,-36px) scale(1.08)} 50%{transform:translate(-30px,30px) scale(.94)} 75%{transform:translate(35px,18px) scale(1.05)} 100%{transform:translate(0,0) scale(1)} }
+    @keyframes float-drift { 0%{transform:translate(0,0) scale(1) rotate(0)} 33%{transform:translate(-50px,-45px) scale(1.12) rotate(2deg)} 66%{transform:translate(36px,28px) scale(.9) rotate(-2deg)} 100%{transform:translate(0,0) scale(1) rotate(0)} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .particle-canvas, .particle-canvas-ambient { position:absolute; inset:0; z-index:1; }
+    .mouse-spotlight { position:fixed; inset:0; z-index:99; pointer-events:none; }
+    .font-display { font-weight: 700; letter-spacing: 0.5px; }
+    h1.font-display { font-weight: 800; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+<div class="mouse-spotlight"></div>
+<div class="deck">
+
+  <!-- 1: Title -->
+  <div class="slide active" data-slide="1">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:520px;height:520px;top:-120px;right:-80px;background:var(--color-accent-1);opacity:.18"></div>
+      <div class="blob" style="width:320px;height:320px;bottom:-70px;left:-60px;background:var(--color-accent-2);opacity:.15"></div>
+      <div class="blob" style="width:240px;height:240px;top:42%;left:12%;background:var(--color-accent-3);opacity:.12"></div>
+      <div class="blob" style="width:220px;height:220px;bottom:20%;right:18%;background:#50dce1;opacity:.09"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="reveal" style="font-size:120px;line-height:1;animation:float 3.2s ease-in-out infinite">🧩</div>
+      <h1 class="reveal font-display tracking-tight text-[clamp(2.6rem,6vw,5.2rem)] font-black bg-linear-to-br from-accent-1 via-accent-2 to-accent-3 bg-clip-text text-transparent">Module Federation</h1>
+      <p class="reveal mt-4 text-[clamp(1rem,1.7vw,1.4rem)] uppercase tracking-[6px] text-text-muted">From Micro Frontend Architecture to Runtime Mechanics</p>
+      <div class="reveal mt-8 flex items-center justify-center gap-4 flex-wrap">
+        <span class="accent-pill">Webpack 5 · Runtime Module Sharing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Agenda -->
+  <div class="slide" data-slide="2">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:340px;height:340px;top:-70px;right:-60px;background:var(--color-accent-1);opacity:.09"></div>
+      <div class="blob" style="width:260px;height:260px;bottom:-40px;left:-40px;background:var(--color-accent-2);opacity:.08"></div>
+    </div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Presentation Agenda</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.1rem)]">A structured path to understanding the mechanics</h2>
+      <div class="grid grid-cols-3 gap-5 mt-8">
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">1</div><div><h3 class="text-base font-bold">Micro Frontend Concept</h3><p class="text-text-secondary mt-1 text-sm">Decomposing large frontends by business domain with independent ownership and deployment.</p></div></div></div>
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">2</div><div><h3 class="text-base font-bold">Implementation Approaches</h3><p class="text-text-secondary mt-1 text-sm">Iframes, Web Components, orchestrators, build-time packages, and runtime federation.</p></div></div></div>
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">3</div><div><h3 class="text-base font-bold">Webpack Foundation</h3><p class="text-text-secondary mt-1 text-sm">How Webpack's module graph, chunk system, and runtime loader enable federation.</p></div></div></div>
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">4</div><div><h3 class="text-base font-bold">Module Federation Concepts</h3><p class="text-text-secondary mt-1 text-sm">Host, Remote, Shared — the three primitives that define a federated architecture.</p></div></div></div>
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">5</div><div><h3 class="text-base font-bold">Detailed Runtime Mechanism</h3><p class="text-text-secondary mt-1 text-sm">Configuration, build output, loading sequence, shared scope, and independent deployment.</p></div></div></div>
+        <div class="glass p-5 reveal"><div class="flex gap-3 items-start"><div class="step-badge">6</div><div><h3 class="text-base font-bold">Adoption Guidance</h3><p class="text-text-secondary mt-1 text-sm">Practical signals for when federation adds value versus when simpler approaches suffice.</p></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: Micro Frontend Concept -->
+  <div class="slide" data-slide="3">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-90px;right:-90px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:var(--color-accent-3);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">1. Micro Frontend</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Bringing microservices thinking to the frontend layer</h2>
+      <div class="grid grid-cols-2 gap-8 mt-8 items-center">
+        <div class="reveal">
+          <p class="text-xl leading-8 text-text-secondary">Micro Frontend decomposes a large application into smaller, domain-aligned frontends, each independently developed and deployed. The model carries the "end-to-end team ownership" principle from microservices into the UI layer.</p>
+          <div class="soft-line my-6"></div>
+          <ul class="space-y-4 text-lg text-text-secondary">
+            <li class="reveal">A single team owns one domain — Search, Checkout, or Account.</li>
+            <li class="reveal">Reduced coupling across codebases, release cycles, and backlogs.</li>
+            <li class="reveal">Autonomy over integration: teams move independently without shared bottlenecks.</li>
+          </ul>
+        </div>
+        <div class="glass p-8 reveal">
+          <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="p-5 rounded-2xl bg-white/5"><div class="text-4xl mb-2">🛒</div><div class="font-semibold">Checkout</div></div>
+            <div class="p-5 rounded-2xl bg-white/5"><div class="text-4xl mb-2">🔎</div><div class="font-semibold">Search</div></div>
+            <div class="p-5 rounded-2xl bg-white/5"><div class="text-4xl mb-2">👤</div><div class="font-semibold">Account</div></div>
+          </div>
+          <div class="mt-6 p-5 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 border border-white/8">
+            <div class="text-sm uppercase tracking-[3px] text-text-muted">Business Goal</div>
+            <div class="mt-2 text-2xl font-bold text-glow">Scale teams without scaling complexity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4: Implementation Approaches -->
+  <div class="slide" data-slide="4">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-100px;left:-50px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-40px;right:-20px;background:var(--color-accent-1);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">2. Implementation Approaches</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Five established integration patterns</h2>
+      <div class="grid grid-cols-3 gap-5 mt-8">
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">🪟</div><h3 class="font-bold text-lg">Iframe</h3><p class="text-text-secondary mt-2">Strong isolation, but UX, SEO, and cross-app communication are typically constrained.</p></div>
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">🧱</div><h3 class="font-bold text-lg">Web Components</h3><p class="text-text-secondary mt-2">Packages UI as custom elements; good for interoperability, but shared state and libraries still require additional solutions.</p></div>
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">🧭</div><h3 class="font-bold text-lg">Orchestrator</h3><p class="text-text-secondary mt-2">A shell application (e.g. single-spa) coordinates routing, mounting, and unmounting of child apps.</p></div>
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">📦</div><h3 class="font-bold text-lg">Build-time Package</h3><p class="text-text-secondary mt-2">Components published as npm packages; straightforward governance, but consumers must rebuild to pick up updates.</p></div>
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">⚡</div><h3 class="font-bold text-lg">Runtime Integration</h3><p class="text-text-secondary mt-2">Modules are loaded while the application is running — the area where Module Federation delivers its greatest advantage.</p></div>
+        <div class="glass p-5 reveal"><div class="text-3xl mb-2">🎯</div><h3 class="font-bold text-lg">When to Consider</h3><p class="text-text-secondary mt-2">When teams need independent release cadences while still sharing code, libraries, and a cohesive UI experience.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5: Why Module Federation -->
+  <div class="slide" data-slide="5">
+    <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;top:-80px;right:-60px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-40px;left:-50px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Why Module Federation?</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">The intersection of team autonomy and seamless integration</h2>
+      <div class="grid grid-cols-2 gap-6 mt-8">
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Product perspective</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">Domain roadmaps become clearer; teams progress without waiting on each other.</li>
+            <li class="reveal">Individual product areas release independently without touching the entire frontend.</li>
+            <li class="reveal">Capabilities are reused across multiple lines of business with less friction.</li>
+          </ul>
+        </div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Engineering perspective</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">No publish-and-rebuild cycle before consumers can use updated modules.</li>
+            <li class="reveal">Heavy dependencies such as Angular or React are shared to prevent duplicate loading.</li>
+            <li class="reveal">The familiar module system and runtime loading model are preserved for developers.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6: Webpack Foundation -->
+  <div class="slide" data-slide="6">
+    <div class="gradient-mesh"><div class="blob" style="width:400px;height:400px;top:-80px;right:-80px;background:var(--color-accent-1);opacity:.09"></div><div class="blob" style="width:250px;height:250px;bottom:-40px;left:-30px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">3. Webpack Foundation</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Webpack already had the building blocks for federation</h2>
+      <div class="grid grid-cols-3 gap-5 mt-9">
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">🕸️</div><h3 class="font-bold text-xl">Dependency Graph</h3><p class="text-text-secondary mt-2">Webpack analyses import and export statements to construct a full dependency tree across all modules.</p></div>
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">🧊</div><h3 class="font-bold text-xl">Chunk Splitting</h3><p class="text-text-secondary mt-2">Code is partitioned into discrete chunks that can be loaded asynchronously on demand.</p></div>
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">⚙️</div><h3 class="font-bold text-xl">Runtime Loader</h3><p class="text-text-secondary mt-2">The browser-side runtime knows how to fetch chunks, resolve module references, and execute factory functions.</p></div>
+      </div>
+      <div class="glass p-6 mt-6 reveal">
+        <div class="text-sm uppercase tracking-[4px] text-text-muted">Key Insight</div>
+        <p class="text-xl text-text-secondary mt-2">Module Federation is not a standalone mechanism bolted on from the outside. It is a principled extension of Webpack's existing chunk loading and runtime resolution infrastructure.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7: Local → Remote -->
+  <div class="slide" data-slide="7">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-70px;left:-50px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-60px;right:-60px;background:var(--color-accent-2);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Webpack Mechanics</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">From local module resolution to remote module loading</h2>
+      <div class="grid grid-cols-2 gap-8 mt-8 items-center">
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Without Federation</h3>
+          <div class="code-box mt-4">import Button from './Button'
+
+→ webpack resolves local path
+→ bundles into a local chunk
+→ runtime loads the local chunk
+→ executes module factory</div>
+        </div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">With Federation</h3>
+          <div class="code-box mt-4">import('remoteApp/Button')
+
+→ runtime identifies remote reference
+→ loads remoteEntry.js
+→ initialises shared scope
+→ calls get('./Button') on container
+→ executes factory like a local module</div>
+        </div>
+      </div>
+      <p class="reveal mt-6 text-lg text-text-secondary">The developer experience remains largely unchanged. What shifts is the module source — from a locally bundled chunk to a remote container resolved at runtime.</p>
+    </div>
+  </div>
+
+  <!-- 8: Host / Remote / Shared -->
+  <div class="slide" data-slide="8">
+    <div class="gradient-mesh"><div class="blob" style="width:480px;height:480px;top:-120px;right:-90px;background:var(--color-accent-1);opacity:.16"></div><div class="blob" style="width:280px;height:280px;bottom:-60px;left:-50px;background:var(--color-accent-2);opacity:.12"></div><div class="blob" style="width:220px;height:220px;top:48%;left:18%;background:var(--color-accent-3);opacity:.10"></div></div>
+    <canvas class="particle-canvas-ambient"></canvas>
+    <div class="content text-center">
+      <div class="reveal accent-pill mb-5 mx-auto">4. Module Federation Core Concepts</div>
+      <h2 class="reveal font-display text-[clamp(2.2rem,5vw,4rem)]">Host, Remote, and Shared</h2>
+      <p class="reveal mt-5 text-[clamp(1.05rem,1.7vw,1.35rem)] text-text-secondary max-w-4xl mx-auto">These three concepts explain most of the architecture: the host consumes modules, the remote publishes modules via a container, and shared manages dependency deduplication and version resolution.</p>
+      <div class="grid grid-cols-3 gap-6 mt-10 text-left">
+        <div class="glass p-7 reveal"><div class="text-4xl mb-3">🏠</div><h3 class="text-2xl font-bold">Host</h3><p class="text-text-secondary mt-2">The application that consumes remote modules and renders them within its own UI.</p></div>
+        <div class="glass p-7 reveal"><div class="text-4xl mb-3">🌍</div><h3 class="text-2xl font-bold">Remote</h3><p class="text-text-secondary mt-2">The application that exposes modules via a container entry file such as <span class="font-mono">remoteEntry.js</span>.</p></div>
+        <div class="glass p-7 reveal"><div class="text-4xl mb-3">🔗</div><h3 class="text-2xl font-bold">Shared</h3><p class="text-text-secondary mt-2">A pool of shared dependencies — such as React or common utilities — that prevents redundant loading.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9: Runtime Components -->
+  <div class="slide" data-slide="9">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-70px;right:-50px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:270px;height:270px;bottom:-50px;left:-45px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Runtime Components</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">The essential technical vocabulary</h2>
+      <div class="grid grid-cols-2 gap-6 mt-8">
+        <div class="glass p-6 reveal"><h3 class="text-xl font-bold">Container</h3><p class="text-text-secondary mt-2">The runtime object representing the remote application, typically registered on <span class="font-mono">window[scope]</span>.</p></div>
+        <div class="glass p-6 reveal"><h3 class="text-xl font-bold">remoteEntry.js</h3><p class="text-text-secondary mt-2">The entry manifest and bootstrap code that tells the host what the remote exposes and how to call into it.</p></div>
+        <div class="glass p-6 reveal"><h3 class="text-xl font-bold">init()</h3><p class="text-text-secondary mt-2">Synchronises the shared scope between host and remote before any module is fetched.</p></div>
+        <div class="glass p-6 reveal"><h3 class="text-xl font-bold">get()</h3><p class="text-text-secondary mt-2">Returns the factory function for an exposed module; the host invokes the factory to obtain the actual module export.</p></div>
+      </div>
+      <div class="code-box mt-6 reveal">await __webpack_init_sharing__('default')
+await container.init(__webpack_share_scopes__.default)
+const factory = await container.get('./Button')
+const Module = factory()</div>
+    </div>
+  </div>
+
+  <!-- 10: Runtime Sequence Overview -->
+  <div class="slide" data-slide="10">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-80px;left:-60px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:220px;height:220px;bottom:-30px;right:-10px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">5. Runtime Mechanics</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">End-to-end sequence from import call to render</h2>
+      <div class="grid grid-cols-5 gap-4 mt-8">
+        <div class="glass p-5 reveal"><div class="step-badge mx-auto">1</div><h3 class="text-center mt-4 font-bold">Resolve</h3><p class="text-sm text-text-secondary mt-2 text-center">The host encounters a remote import and identifies the target container.</p></div>
+        <div class="glass p-5 reveal"><div class="step-badge mx-auto">2</div><h3 class="text-center mt-4 font-bold">Load</h3><p class="text-sm text-text-secondary mt-2 text-center">The browser fetches <span class="font-mono">remoteEntry.js</span> from the remote application.</p></div>
+        <div class="glass p-5 reveal"><div class="step-badge mx-auto">3</div><h3 class="text-center mt-4 font-bold">Init</h3><p class="text-sm text-text-secondary mt-2 text-center">Host and remote perform a handshake to align on shared dependency versions.</p></div>
+        <div class="glass p-5 reveal"><div class="step-badge mx-auto">4</div><h3 class="text-center mt-4 font-bold">Get</h3><p class="text-sm text-text-secondary mt-2 text-center">The host calls <span class="font-mono">get('./module')</span> to receive a factory function.</p></div>
+        <div class="glass p-5 reveal"><div class="step-badge mx-auto">5</div><h3 class="text-center mt-4 font-bold">Execute</h3><p class="text-sm text-text-secondary mt-2 text-center">The factory runs, the module is evaluated, and it renders like local code.</p></div>
+      </div>
+      <div class="glass p-6 mt-6 reveal"><p class="text-xl text-text-secondary">In short: <span class="text-white font-semibold">Module Federation = remote code loading + dependency sharing + container contract at runtime.</span></p></div>
+    </div>
+  </div>
+
+  <!-- 11: Configuration Phase (NEW) -->
+  <div class="slide" data-slide="11">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-80px;right:-60px;background:var(--color-accent-1);opacity:.09"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-40px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Deep Dive · Configuration Phase</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Declaring the federation contract in webpack.config.js</h2>
+      <div class="grid grid-cols-2 gap-8 mt-8 items-start">
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold mb-3">Remote Application</h3>
+          <p class="text-text-secondary mb-4 text-sm">Declares which modules it exposes and the entry filename consumers will reference.</p>
+          <div class="code-box">new ModuleFederationPlugin({
+  name: "remoteApp",
+  filename: "remoteEntry.js",
+  exposes: {
+    "./Button": "./src/components/Button"
+  },
+  shared: ["react", "react-dom"]
+})</div>
+        </div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold mb-3">Host Application</h3>
+          <p class="text-text-secondary mb-4 text-sm">Maps remote names to their runtime URLs so the module system can resolve them at load time.</p>
+          <div class="code-box">new ModuleFederationPlugin({
+  name: "hostApp",
+  remotes: {
+    remoteApp:
+      "remoteApp@http://localhost:3001/remoteEntry.js"
+  },
+  shared: ["react", "react-dom"]
+})</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12: Build Phase (NEW) -->
+  <div class="slide" data-slide="12">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;left:-60px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-40px;right:-30px;background:var(--color-accent-3);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Deep Dive · Build Phase</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">What webpack generates per application during the build</h2>
+      <div class="grid grid-cols-3 gap-6 mt-8">
+        <div class="glass p-7 reveal">
+          <div class="text-4xl mb-3">📁</div>
+          <h3 class="font-bold text-xl">Application Bundles</h3>
+          <p class="text-text-secondary mt-3">Standard output chunks for the application itself — split and optimised exactly as they would be without federation.</p>
+        </div>
+        <div class="glass p-7 reveal">
+          <div class="text-4xl mb-3">📋</div>
+          <h3 class="font-bold text-xl">remoteEntry.js</h3>
+          <p class="text-text-secondary mt-3">The container entry point: a manifest of every exposed module, the chunk IDs that back them, and the bootstrap code consumers invoke to load them.</p>
+        </div>
+        <div class="glass p-7 reveal">
+          <div class="text-4xl mb-3">⚙️</div>
+          <h3 class="font-bold text-xl">Runtime Code</h3>
+          <p class="text-text-secondary mt-3">Webpack-generated logic for managing the shared scope, coordinating version negotiation, and orchestrating asynchronous module loading across application boundaries.</p>
+        </div>
+      </div>
+      <div class="glass p-5 mt-6 reveal">
+        <p class="text-text-secondary text-lg"><span class="text-white font-semibold">Each application builds fully independently.</span> The federation contract is resolved at runtime, not at build time — which is what enables independent deployment.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13: Runtime Loading Detail (NEW) -->
+  <div class="slide" data-slide="13">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-80px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-50px;left:-40px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-4">Deep Dive · Runtime Loading</div>
+      <h2 class="reveal font-display text-[clamp(1.8rem,3.5vw,2.8rem)]">Four operations from import call to usable module</h2>
+      <div class="grid grid-cols-2 gap-5 mt-6">
+        <div class="glass p-5 reveal">
+          <div class="flex gap-3 items-center mb-3"><div class="step-badge">1</div><h3 class="font-bold text-lg">Load Container</h3></div>
+          <p class="text-text-secondary text-sm mb-3">The host dynamically injects the remote entry script into the document head.</p>
+          <div class="code-box">const script = document.createElement('script');
+script.src = 'http://localhost:3001/remoteEntry.js';
+document.head.appendChild(script);</div>
+        </div>
+        <div class="glass p-5 reveal">
+          <div class="flex gap-3 items-center mb-3"><div class="step-badge">2</div><h3 class="font-bold text-lg">Initialise Shared Scope</h3></div>
+          <p class="text-text-secondary text-sm mb-3">The host passes its shared dependency registry to the remote container.</p>
+          <div class="code-box">await remoteApp.init(
+  __webpack_share_scopes__.default
+);</div>
+        </div>
+        <div class="glass p-5 reveal">
+          <div class="flex gap-3 items-center mb-3"><div class="step-badge">3</div><h3 class="font-bold text-lg">Retrieve Module Factory</h3></div>
+          <p class="text-text-secondary text-sm mb-3">The host calls get() to obtain a factory function for the requested module.</p>
+          <div class="code-box">const factory =
+  await remoteApp.get('./Button');</div>
+        </div>
+        <div class="glass p-5 reveal">
+          <div class="flex gap-3 items-center mb-3"><div class="step-badge">4</div><h3 class="font-bold text-lg">Evaluate Module</h3></div>
+          <p class="text-text-secondary text-sm mb-3">The factory is invoked to produce the actual module export, ready for use.</p>
+          <div class="code-box">const Button = factory().default;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14: Shared Dependency Management (NEW) -->
+  <div class="slide" data-slide="14">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;left:-50px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-40px;right:-30px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Deep Dive · Shared Dependency Management</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Version negotiation and singleton enforcement at runtime</h2>
+      <div class="grid grid-cols-2 gap-8 mt-8 items-start">
+        <div class="reveal">
+          <ul class="space-y-5 text-lg text-text-secondary">
+            <li class="reveal"><span class="text-white font-semibold">Version comparison:</span> Webpack runtime compares the version requirements declared by both host and remote.</li>
+            <li class="reveal"><span class="text-white font-semibold">Best-match selection:</span> The highest mutually compatible version is chosen and loaded exactly once.</li>
+            <li class="reveal"><span class="text-white font-semibold">Singleton guarantee:</span> When <span class="font-mono">singleton: true</span> is set, only a single instance is permitted across the entire application boundary.</li>
+            <li class="reveal"><span class="text-white font-semibold">Version contract:</span> <span class="font-mono">requiredVersion</span> enforces a strict semver range — a mismatch triggers a warning or error at load time.</li>
+          </ul>
+        </div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-xl font-bold mb-4">Singleton configuration example</h3>
+          <div class="code-box">shared: {
+  react: {
+    singleton: true,
+    requiredVersion: "^18.0.0"
+  },
+  "react-dom": {
+    singleton: true,
+    requiredVersion: "^18.0.0"
+  }
+}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 15: HMR / Independent Deployment (NEW) -->
+  <div class="slide" data-slide="15">
+    <div class="gradient-mesh"><div class="blob" style="width:400px;height:400px;top:-90px;right:-70px;background:var(--color-accent-1);opacity:.09"></div><div class="blob" style="width:270px;height:270px;bottom:-50px;left:-40px;background:var(--color-accent-2);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Deep Dive · Independent Deployment</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Updating a remote without rebuilding the host</h2>
+      <div class="glass p-8 mt-8 reveal">
+        <p class="text-xl leading-9 text-text-secondary">When a remote application is updated and redeployed, the host automatically loads the latest version of its modules on the next page load — <span class="text-white font-semibold">without requiring its own rebuild or redeployment</span>. This is the defining advantage of runtime federation over build-time package integration, and it is what enables truly independent delivery at scale.</p>
+      </div>
+      <div class="grid grid-cols-3 gap-5 mt-6">
+        <div class="glass p-5 reveal">
+          <div class="text-3xl mb-2">📦</div>
+          <h3 class="font-bold">Build-time Package</h3>
+          <p class="text-text-secondary mt-2 text-sm">The consumer must republish the dependency and rebuild to receive any change from the producer.</p>
+        </div>
+        <div class="glass p-5 reveal" style="border: 1px solid rgba(80,220,225,0.45);">
+          <div class="text-3xl mb-2">⚡</div>
+          <h3 class="font-bold">Module Federation</h3>
+          <p class="text-text-secondary mt-2 text-sm">The remote deploys independently. The host picks up the change on the next load with no rebuild required.</p>
+        </div>
+        <div class="glass p-5 reveal">
+          <div class="text-3xl mb-2">🎯</div>
+          <h3 class="font-bold">Business Value</h3>
+          <p class="text-text-secondary mt-2 text-sm">Each team controls its own release cadence with zero coordination overhead at the deployment level.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16: loadComponent Pattern (was 11) -->
+  <div class="slide" data-slide="16">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-80px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-40px;left:-40px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Reference · loadComponent Pattern</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">The canonical pattern for dynamic remote loading</h2>
+      <div class="grid grid-cols-2 gap-8 mt-8 items-start">
+        <div class="code-box reveal">function loadComponent(scope, module) {
+  return async () => {
+    await __webpack_init_sharing__('default');
+    const container = window[scope];
+    await container.init(
+      __webpack_share_scopes__.default
+    );
+    const factory = await container.get(module);
+    return factory();
+  };
+}</div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Line-by-line walkthrough</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal"><span class="text-white font-semibold">init_sharing</span>: Initialises and populates the default shared scope.</li>
+            <li class="reveal"><span class="text-white font-semibold">window[scope]</span>: Retrieves the remote container registered by remoteEntry.</li>
+            <li class="reveal"><span class="text-white font-semibold">container.init</span>: Informs the remote which shared dependencies are available for reuse.</li>
+            <li class="reveal"><span class="text-white font-semibold">container.get</span>: Returns a factory — not the final module — which must then be called to evaluate the export.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 17: Shared Dependency bars (was 12) -->
+  <div class="slide" data-slide="17">
+    <div class="gradient-mesh"><div class="blob" style="width:320px;height:320px;top:-70px;left:-40px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-60px;right:-50px;background:var(--color-accent-1);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Shared Dependencies</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Why shared is the most strategically important configuration</h2>
+      <div class="grid grid-cols-3 gap-5 mt-8">
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">1️⃣</div><h3 class="font-bold text-xl">Prevent Duplication</h3><p class="text-text-secondary mt-2">If the host already provides React, the remote can reuse it instead of loading a second copy.</p></div>
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">2️⃣</div><h3 class="font-bold text-xl">Eliminate Conflicts</h3><p class="text-text-secondary mt-2">Policies such as <span class="font-mono">singleton</span> and <span class="font-mono">requiredVersion</span> prevent multiple incompatible instances from coexisting.</p></div>
+        <div class="glass p-6 reveal"><div class="text-4xl mb-3">3️⃣</div><h3 class="font-bold text-xl">Optimise Bundle Size</h3><p class="text-text-secondary mt-2">Remote bundles remain self-contained, yet the runtime has the opportunity to deduplicate shared portions at load time.</p></div>
+      </div>
+      <div class="mt-8 glass p-7 reveal">
+        <div class="grid grid-cols-[180px_1fr_70px] gap-4 items-center mb-4"><div class="font-semibold">React</div><div class="bar-track"><div class="bar-fill" data-width="92"></div></div><div class="text-right text-text-secondary">92%</div></div>
+        <div class="grid grid-cols-[180px_1fr_70px] gap-4 items-center mb-4"><div class="font-semibold">Design System</div><div class="bar-track"><div class="bar-fill" data-width="78"></div></div><div class="text-right text-text-secondary">78%</div></div>
+        <div class="grid grid-cols-[180px_1fr_70px] gap-4 items-center"><div class="font-semibold">Utilities</div><div class="bar-track"><div class="bar-fill" data-width="64"></div></div><div class="text-right text-text-secondary">64%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18: Build-time vs Runtime (was 13) -->
+  <div class="slide" data-slide="18">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-70px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-30px;left:-30px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Build-time vs. Runtime</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">A comparison to avoid confusing federation with npm packages</h2>
+      <div class="grid grid-cols-2 gap-6 mt-8">
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Build-time Integration</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">The consumer installs the dependency before building.</li>
+            <li class="reveal">Updating the producer typically requires republishing and rebuilding every consumer.</li>
+            <li class="reveal">Well-suited to stable libraries with infrequent runtime changes.</li>
+          </ul>
+        </div>
+        <div class="glass p-7 reveal">
+          <h3 class="text-2xl font-bold">Runtime Federation</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">The consumer loads the module from a remote URL while the application is running.</li>
+            <li class="reveal">The producer deploys independently; the host does not need to rebuild.</li>
+            <li class="reveal">Designed for micro frontend architectures with independent domain release cycles.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19: When to Use (was 14) -->
+  <div class="slide" data-slide="19">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-60px;left:-50px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-40px;right:-20px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">6. Adoption Guidance</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">Not every frontend challenge requires federation</h2>
+      <div class="grid grid-cols-2 gap-6 mt-8">
+        <div class="glass p-7 reveal border-l-4 border-accent-2">
+          <h3 class="text-2xl font-bold">Strong signals to adopt</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">Multiple teams co-developing a single product platform.</li>
+            <li class="reveal">A requirement to release by domain or business capability independently.</li>
+            <li class="reveal">Shared UI modules needed across teams without coupling release cycles.</li>
+          </ul>
+        </div>
+        <div class="glass p-7 reveal border-l-4 border-amber-400">
+          <h3 class="text-2xl font-bold">Signals to defer adoption</h3>
+          <ul class="mt-4 space-y-4 text-text-secondary text-lg">
+            <li class="reveal">A single small team with a straightforward release cadence.</li>
+            <li class="reveal">Insufficient discipline around API contracts, versioning, and observability.</li>
+            <li class="reveal">The real need is a reusable component library rather than independent deployment.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 20: Executive Summary (was 15) -->
+  <div class="slide" data-slide="20">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;right:-80px;background:var(--color-accent-1);opacity:.09"></div><div class="blob" style="width:260px;height:260px;bottom:-40px;left:-40px;background:var(--color-accent-2);opacity:.08"></div></div>
+    <div class="content">
+      <div class="reveal accent-pill mb-5">Executive Summary</div>
+      <h2 class="reveal font-display text-[clamp(2rem,4vw,3.2rem)]">The complete picture in under 60 seconds</h2>
+      <div class="glass p-8 reveal">
+        <p class="text-2xl leading-10 text-text-secondary">"Micro Frontend is an architectural approach that divides the frontend by business domain so that teams can work independently. There are many ways to implement it, but Module Federation stands out because it allows one application to consume modules from another at runtime. Webpack makes this possible because it already has a runtime loader, a chunk system, and a module graph. Module Federation extends that infrastructure with containers, remote entries, and a shared scope."</p>
+      </div>
+      <div class="grid grid-cols-3 gap-5 mt-6">
+        <div class="glass p-5 reveal text-center"><div class="text-4xl stat-glow font-black">Concept</div><div class="text-text-secondary mt-2">Domain decomposition</div></div>
+        <div class="glass p-5 reveal text-center"><div class="text-4xl stat-glow font-black">Mechanism</div><div class="text-text-secondary mt-2">Load remote at runtime</div></div>
+        <div class="glass p-5 reveal text-center"><div class="text-4xl stat-glow font-black">Value</div><div class="text-text-secondary mt-2">Independent delivery</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 21: Closing (was 16) -->
+  <div class="slide" data-slide="21">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:500px;height:500px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.16"></div>
+      <div class="blob" style="width:320px;height:320px;bottom:-70px;left:-50px;background:var(--color-accent-2);opacity:.13"></div>
+      <div class="blob" style="width:220px;height:220px;top:44%;left:18%;background:var(--color-accent-3);opacity:.10"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="reveal" style="font-size:112px;line-height:1;animation:float 3.2s ease-in-out infinite">🚀</div>
+      <h2 class="reveal font-display text-[clamp(2.6rem,5.6vw,4.8rem)] bg-linear-to-br from-accent-1 via-accent-2 to-accent-3 bg-clip-text text-transparent">Ready for Team Presentation</h2>
+      <p class="reveal mt-4 text-[clamp(1rem,1.6vw,1.35rem)] uppercase tracking-[6px] text-text-muted">Micro Frontend → Webpack Runtime → Module Federation</p>
+    </div>
+  </div>
+
+</div>
+<div class="nav-controls">
+  <button class="nav-btn" aria-label="Previous slide" onclick="changeSlide(-1)">&#8249;</button>
+  <div class="slide-dots" id="dots"></div>
+  <button class="nav-btn" aria-label="Next slide" onclick="changeSlide(1)">&#8250;</button>
+  <span class="slide-counter" id="counter">1 / 21</span>
+</div>
+<script>
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+function goToSlide(n) { const prev = document.querySelector('.slide.active'); const next = document.querySelector(`.slide[data-slide="${n}"]`); if (prev) prev.classList.remove('active'); if (next) { next.classList.add('active'); animateSlide(next); } current = n; updateNav(); }
+function changeSlide(dir) { let next = current + dir; if (next < 1) next = total; if (next > total) next = 1; goToSlide(next); }
+function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current)); counter.textContent = current + ' / ' + total; }
+document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
+let touchStartX = 0; document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }); document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => { el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.offsetHeight; const delay = i * 0.08; el.style.transition = `opacity .38s ease ${delay}s, transform .38s ease ${delay}s`; el.style.opacity = '1'; el.style.transform = 'translateY(0px)'; });
+  animateSlideEffects(slide);
+}
+function animateSlideEffects(slide) {
+  slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => { bar.classList.add('fill-init'); bar.style.width = '0%'; bar.style.transition = `width .6s ease ${i * 0.08}s`; bar.offsetHeight; bar.style.width = bar.dataset.width + '%'; });
+}
+document.addEventListener('mousemove', (e) => { const spotlight = document.querySelector('.mouse-spotlight'); if (spotlight) spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(80,220,225,.06), transparent 40%)`; });
+(function(){ let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2; const cx = window.innerWidth/2, cy = window.innerHeight/2; document.addEventListener('mousemove', (e)=>{ mouseX=e.clientX; mouseY=e.clientY; }); (function tick(){ const ox=(mouseX-cx)/cx, oy=(mouseY-cy)/cy; document.querySelectorAll('.deco-shape').forEach(shape=>{ const speed=parseFloat(shape.dataset.speed)||0.03; shape.style.transform=`translate(${ox*speed*100}px, ${oy*speed*100}px)`; }); requestAnimationFrame(tick); })(); })();
+window.initParticles = function(canvas, options) {
+  if (!canvas) return; const ctx = canvas.getContext('2d'); canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; const interactive = options.interactive !== false; const count = options.count || (interactive ? 55 : 18); let mx = -1000, my = -1000; const particles = Array.from({length: count}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3, size: Math.random()*2.5+.8, alpha: Math.random()*.35+.08 })); if (interactive) { canvas.addEventListener('mousemove', (e) => { const r = canvas.getBoundingClientRect(); mx = e.clientX-r.left; my = e.clientY-r.top; }); canvas.addEventListener('mouseleave', ()=>{ mx=-1000; my=-1000; }); }
+  (function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{ if (interactive) { const dx=p.x-mx, dy=p.y-my, dist=Math.sqrt(dx*dx+dy*dy)||1; if (dist<120) { const force=(120-dist)/120*2; p.vx += (dx/dist)*force*.1; p.vy += (dy/dist)*force*.1; } } p.vx*=.98; p.vy*=.98; p.x+=p.vx; p.y+=p.vy; if (p.x<0) p.x=canvas.width; if (p.x>canvas.width) p.x=0; if (p.y<0) p.y=canvas.height; if (p.y>canvas.height) p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle=`rgba(80,220,225,${p.alpha})`; ctx.fill(); }); requestAnimationFrame(animate); })();
+}
+document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, {interactive:true,count:55}));
+document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, {interactive:false,count:18}));
+try { animateSlide(document.querySelector('.slide.active')); } catch(e) {}
+</script>
+</body>
+</html>
